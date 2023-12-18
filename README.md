@@ -2,6 +2,13 @@
 
 Command-line utility that slices an input image into segments according to specified width and height, and outputs those segments into a folder.
 
+## Install
+
+- `git clone https://github.com/thinknathan/node-image-slice`
+- `npm i`
+or
+- `yarn`
+
 ## Usage
 
 `node slice.cjs <filename> <width> [height]`
