@@ -1,0 +1,23 @@
+{
+  "name": "node-image-slice",
+  "version": "1.0.0",
+  "description": "Slices an input image into segments according to specified width and height",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thinknathan/node-image-slice.git"
+  },
+  "author": "Nathan Bolton (https://thinknathan.ca/)",
+  "license": "CC0-1.0",
+  "type": "commonjs",
+  "main": "slice.cjs",
+  "files": [
+    "slice.cjs"
+  ],
+  "scripts": {
+    "prettier": "prettier \"./**/*.{cjs,md,json}\" --write"
+  },
+  "devDependencies": {
+    "jimp": "~0.22.10",
+    "prettier": "^3.1.1"
+  }
+}
