@@ -68,7 +68,7 @@ function continueSlicing(image, width, height, inputFilename) {
 const [filename, width, height] = process.argv.slice(2);
 
 if (!filename || !width) {
-  console.log("Usage: node sliceImage.js <filename> <width> [height]");
+  console.log("Usage: node slice.cjs <filename> <width> [height]");
 } else {
   sliceImage(filename, parseInt(width), parseInt(height));
 }
