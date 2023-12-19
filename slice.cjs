@@ -1,61 +1,56 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Jimp = require("jimp");
-const fs = require("fs");
-const path = require("path");
-const outputFolder = "output";
-function sliceImage(filename, width, height) {
-  Jimp.read(filename, (err, image) => {
-    if (err) {
-      // Try again by appending '.png' to the filename
-      const pngFilename = `${filename}.png`;
-      Jimp.read(pngFilename, (pngErr, pngImage) => {
-        if (pngErr) {
-          console.error("Error reading the image:", pngErr);
-          return;
-        }
-        continueSlicing(pngImage, width, height, filename);
-      });
-    } else {
-      continueSlicing(image, width, height, filename);
-    }
-  });
-}
-function continueSlicing(image, width, height, inputFilename) {
-  // If height is not specified, use width as height
-  height = height || width;
-  const imageWidth = image.getWidth();
-  const imageHeight = image.getHeight();
-  // Calculate the number of slices in both dimensions
-  const horizontalSlices = Math.ceil(imageWidth / width);
-  const verticalSlices = Math.ceil(imageHeight / height);
-  // Create a folder for output if it doesn't exist
-  if (!fs.existsSync(outputFolder)) {
-    fs.mkdirSync(outputFolder);
+const yargs = require("yargs");
+const os = require("os");
+const processImage_1 = require("./utils/processImage");
+const processPath_1 = require("./utils/processPath");
+// Parse command line arguments
+const options = yargs
+  .option("f", {
+    alias: "filename",
+    describe: "Input image filename",
+    type: "string",
+  })
+  .option("i", {
+    alias: "folderPath",
+    describe: "Input folder",
+    type: "string",
+  })
+  .option("w", {
+    alias: "width",
+    describe: "Output image width",
+    type: "number",
+    demandOption: true,
+    coerce: (value) => {
+      if (value < 1) {
+        throw new Error("width should not be lower than 1");
+      }
+      return Math.round(value);
+    },
+  })
+  .option("h", {
+    alias: "height",
+    describe: "Output image height",
+    type: "number",
+    coerce: (value) => {
+      if (value !== undefined && value < 1) {
+        throw new Error("height should not be lower than 1");
+      }
+      return Math.round(value);
+    },
+  }).argv;
+if (options.filename) {
+  // Process a single image
+  const { filename, width, height } = options;
+  (0, processImage_1.sliceImage)(filename, width, height);
+} else if (options.folderPath) {
+  // Process all images in a folder, splitting the task into threads
+  let numCores = 2;
+  try {
+    numCores = os.cpus().length;
+  } catch (err) {
+    console.error(err);
   }
-  // Slice the image and save each segment
-  for (let y = 0; y < verticalSlices; y++) {
-    for (let x = 0; x < horizontalSlices; x++) {
-      const startX = x * width;
-      const startY = y * height;
-      const sliceWidth = Math.min(width, imageWidth - startX);
-      const sliceHeight = Math.min(height, imageHeight - startY);
-      const slice = image.clone().crop(startX, startY, sliceWidth, sliceHeight);
-      // Incorporate the input filename into the output filename
-      const baseFilename = path.basename(
-        inputFilename,
-        path.extname(inputFilename),
-      );
-      const outputFilename = `${outputFolder}/${baseFilename}_${x}_${y}.png`;
-      slice.write(outputFilename);
-      console.log(`Slice saved: ${outputFilename}`);
-    }
-  }
-}
-// Get input from the command line arguments
-const [filename, width, height] = process.argv.slice(2);
-if (!filename || !width) {
-  console.log("Usage: node slice.cjs <filename> <width> [height]");
-} else {
-  sliceImage(filename, parseInt(width), parseInt(height));
+  numCores = Math.max(numCores - 1, 1);
+  (0, processPath_1.processPath)(options.folderPath, options, numCores);
 }

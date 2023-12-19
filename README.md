@@ -1,6 +1,6 @@
 # node-image-slice
 
-Command-line utility that slices an input image into segments according to specified width and height, and outputs those segments into a folder.
+Command-line utility that slices input images into segments according to specified width and height, and outputs those segments into a folder.
 
 ## Install
 
@@ -16,18 +16,17 @@ Command-line utility that slices an input image into segments according to speci
 
 ## Usage
 
-`node slice.cjs <filename> <width> [height]`
+`node slice.cjs`
 
-- If `filename` does not include an extension, `.png` will be guessed
+```
+-f, --filename    Input image filename                                [string]
+-i, --folderPath  Input folder                                        [string]
+-w, --width       Output image width                       [number] [required]
+-h, --height      Output image height                                 [number]
+```
+
+- If `filename` does not include an extension, `.png`, `.gif`, `.jpg` and `.jpeg` will be guessed
 - If `height` is not specified, `width` will be used as `height`
-
-## Supported formats
-
-- jpeg
-- png
-- bmp
-- tiff
-- gif
 
 ## Background
 
