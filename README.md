@@ -4,10 +4,15 @@ Command-line utility that slices an input image into segments according to speci
 
 ## Install
 
-- `git clone https://github.com/thinknathan/node-image-slice`
-- `npm i`
-or
-- `yarn`
+1. Install [Nodejs](https://nodejs.org/en) or equivalent
+
+2. Clone this project
+   `git clone https://github.com/thinknathan/node-image-slice`
+
+3. Install dependencies
+   `npm i`
+   or
+   `yarn`
 
 ## Usage
 
