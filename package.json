@@ -1,6 +1,6 @@
 {
   "name": "node-image-slice",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Slices an input image into segments according to specified width and height",
   "repository": {
     "type": "git",
@@ -11,7 +11,8 @@
   "type": "commonjs",
   "main": "slice.cjs",
   "files": [
-    "slice.cjs"
+    "slice.cjs",
+    "utils"
   ],
   "scripts": {
     "build": "tsc && npm run renameCjs && npm run prettier",
@@ -19,11 +20,13 @@
     "prettier": "prettier \"./**/*.{ts,d.ts,cjs,md,json}\" --write"
   },
   "devDependencies": {
+    "@types/yargs": "^17.0.32",
     "prettier": "^3.1.1",
     "tsc": "^2.0.4",
     "typescript": "~5.2.2"
   },
   "dependencies": {
-    "jimp": "~0.22.10"
+    "jimp": "~0.22.10",
+    "yargs": "^17.7.2"
   }
 }
