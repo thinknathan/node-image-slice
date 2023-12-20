@@ -3,3 +3,4 @@
 
 # Exclude files from archive
 .gitattributes export-ignore
+.vscode export-ignore
