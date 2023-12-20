@@ -56,4 +56,8 @@ if (options.filename) {
   }
   numCores = Math.max(numCores - 1, 1);
   processPath(options.folderPath, options, numCores);
+} else {
+  console.log(
+    "Requires either `filename` or `folderPath`. Run `slice --help` for help.",
+  );
 }
