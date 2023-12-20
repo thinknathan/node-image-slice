@@ -10,6 +10,9 @@
   "license": "CC0-1.0",
   "type": "commonjs",
   "main": "slice.cjs",
+  "bin": {
+    "slice": "./slice.cjs"
+  },
   "files": [
     "slice.cjs",
     "utils"
