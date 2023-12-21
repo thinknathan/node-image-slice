@@ -13,11 +13,23 @@ function main() {
 			alias: 'filename',
 			describe: 'Input image filename',
 			type: 'string',
+			coerce: (value) => {
+				if (Array.isArray(value)) {
+					value = value.join('');
+				}
+				return value;
+			},
 		})
 		.option('i', {
 			alias: 'folderPath',
 			describe: 'Input folder',
 			type: 'string',
+			coerce: (value) => {
+				if (Array.isArray(value)) {
+					value = value.join('');
+				}
+				return value;
+			},
 		})
 		.option('w', {
 			alias: 'width',
@@ -110,8 +122,8 @@ function main() {
 		numCores = Math.min(numCores, 16); // Max 16
 		processPath(options.folderPath, options, numCores);
 	} else {
-		console.log(
-			'Requires either `filename` or `folderPath`. Run `slice --help` for help.',
+		console.error(
+			'Error: Requires either `filename` or `folderPath`. Run `slice --help` for help.',
 		);
 	}
 }

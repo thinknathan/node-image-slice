@@ -3,7 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { workerData, isMainThread } from 'worker_threads';
 
-const outputFolder = 'output';
+function errorCallback(err: unknown) {
+	if (err) {
+		console.error(err);
+	}
+}
 
 /**
  * Function to slice an image into smaller segments
@@ -18,12 +22,11 @@ export function sliceImage(
 	cubic: boolean,
 	skipExtCheck?: boolean,
 ): void {
-	Jimp.read(filename, (err, image) => {
-		if (err && skipExtCheck) {
-			console.error(err);
-		} else {
+	Jimp.read(filename)
+		.then((image) => {
 			// Continue slicing if image is successfully read
 			if (image) {
+				skipExtCheck = true;
 				continueSlicing(
 					image,
 					width,
@@ -35,41 +38,53 @@ export function sliceImage(
 					filename,
 				);
 			}
-		}
-	});
-
-	if (skipExtCheck) {
-		return;
-	}
-
-	// Check for supported image formats if skipExtCheck is false
-	const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
-	let foundImage = false;
-
-	// Attempt to read the image with different extensions
-	supportedFormats.forEach(async (ext, index) => {
-		const fullFilename = filename + ext;
-		if (!foundImage) {
-			try {
-				const image = await Jimp.read(fullFilename);
-				foundImage = true;
-				continueSlicing(
-					image,
-					width,
-					height,
-					canvasWidth,
-					canvasHeight,
-					scale,
-					cubic,
-					fullFilename,
-				);
-			} catch (err) {}
-
-			if (!foundImage && index === supportedFormats.length - 1) {
-				console.error(`Could not find ${filename}`);
+		})
+		.catch((err) => {
+			if (skipExtCheck) {
+				console.error(err);
 			}
-		}
-	});
+		})
+		.finally(() => {
+			if (skipExtCheck) {
+				return;
+			}
+
+			// Check for supported image formats if skipExtCheck is false
+			const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
+			let foundImage = false;
+
+			// Attempt to read the image with different extensions
+			const promises = supportedFormats.map((ext) => {
+				const fullFilename = filename + ext;
+				return (
+					Jimp.read(fullFilename)
+						.then((image) => {
+							foundImage = true;
+							continueSlicing(
+								image,
+								width,
+								height,
+								canvasWidth,
+								canvasHeight,
+								scale,
+								cubic,
+								fullFilename,
+							);
+						})
+						// Silence errors since we'll handle them later
+						.catch(() => {})
+				);
+			});
+
+			// Wait for all promises to be resolved
+			Promise.all(promises)
+				.then(() => {
+					if (!foundImage) {
+						console.error(`Error: Could not find ${filename}`);
+					}
+				})
+				.catch(errorCallback);
+		});
 }
 
 /**
@@ -86,6 +101,7 @@ function continueSlicing(
 	inputFilename: string,
 ): void {
 	console.time('Done in');
+
 	// If height is not specified, use width as height
 	height = height || width;
 
@@ -97,6 +113,7 @@ function continueSlicing(
 	const verticalSlices = Math.ceil(imageHeight / height);
 
 	// Create a folder for output if it doesn't exist
+	const outputFolder = 'output';
 	if (!fs.existsSync(outputFolder)) {
 		fs.mkdirSync(outputFolder);
 	}
@@ -141,7 +158,7 @@ function continueSlicing(
 						cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR,
 					);
 				}
-				canvas.write(outputFilename);
+				canvas.write(outputFilename, errorCallback);
 			} else {
 				if (scale !== 1) {
 					slice.scale(
@@ -149,7 +166,7 @@ function continueSlicing(
 						cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR,
 					);
 				}
-				slice.write(outputFilename);
+				slice.write(outputFilename, errorCallback);
 			}
 
 			console.log(`Slice saved: ${outputFilename}`);

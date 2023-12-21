@@ -10,6 +10,7 @@ export function processPath(
 	options: Options,
 	maxWorkers: number,
 ): void {
+	console.log({ directoryPath });
 	const workerPool = new WorkerPool(maxWorkers);
 
 	// Read the contents of the directory

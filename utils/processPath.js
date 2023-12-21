@@ -8,6 +8,7 @@ const workerPool_1 = require("./workerPool");
  * Processes all files in the specified directory with the given image processing options.
  */
 function processPath(directoryPath, options, maxWorkers) {
+    console.log({ directoryPath });
     const workerPool = new workerPool_1.WorkerPool(maxWorkers);
     // Read the contents of the directory
     fs.readdir(directoryPath, (err, files) => {

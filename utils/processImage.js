@@ -5,42 +5,54 @@ const Jimp = require("jimp");
 const fs = require("fs");
 const path = require("path");
 const worker_threads_1 = require("worker_threads");
-const outputFolder = 'output';
+function errorCallback(err) {
+    if (err) {
+        console.error(err);
+    }
+}
 /**
  * Function to slice an image into smaller segments
  */
 function sliceImage(filename, width, height, canvasWidth, canvasHeight, scale, cubic, skipExtCheck) {
-    Jimp.read(filename, (err, image) => {
-        if (err && skipExtCheck) {
+    Jimp.read(filename)
+        .then((image) => {
+        // Continue slicing if image is successfully read
+        if (image) {
+            skipExtCheck = true;
+            continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, filename);
+        }
+    })
+        .catch((err) => {
+        if (skipExtCheck) {
             console.error(err);
         }
-        else {
-            // Continue slicing if image is successfully read
-            if (image) {
-                continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, filename);
-            }
+    })
+        .finally(() => {
+        if (skipExtCheck) {
+            return;
         }
-    });
-    if (skipExtCheck) {
-        return;
-    }
-    // Check for supported image formats if skipExtCheck is false
-    const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
-    let foundImage = false;
-    // Attempt to read the image with different extensions
-    supportedFormats.forEach(async (ext, index) => {
-        const fullFilename = filename + ext;
-        if (!foundImage) {
-            try {
-                const image = await Jimp.read(fullFilename);
+        // Check for supported image formats if skipExtCheck is false
+        const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
+        let foundImage = false;
+        // Attempt to read the image with different extensions
+        const promises = supportedFormats.map((ext) => {
+            const fullFilename = filename + ext;
+            return (Jimp.read(fullFilename)
+                .then((image) => {
                 foundImage = true;
                 continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, fullFilename);
+            })
+                // Silence errors since we'll handle them later
+                .catch(() => { }));
+        });
+        // Wait for all promises to be resolved
+        Promise.all(promises)
+            .then(() => {
+            if (!foundImage) {
+                console.error(`Error: Could not find ${filename}`);
             }
-            catch (err) { }
-            if (!foundImage && index === supportedFormats.length - 1) {
-                console.error(`Could not find ${filename}`);
-            }
-        }
+        })
+            .catch(errorCallback);
     });
 }
 exports.sliceImage = sliceImage;
@@ -57,6 +69,7 @@ function continueSlicing(image, width, height, canvasWidth, canvasHeight, scale,
     const horizontalSlices = Math.ceil(imageWidth / width);
     const verticalSlices = Math.ceil(imageHeight / height);
     // Create a folder for output if it doesn't exist
+    const outputFolder = 'output';
     if (!fs.existsSync(outputFolder)) {
         fs.mkdirSync(outputFolder);
     }
@@ -84,13 +97,13 @@ function continueSlicing(image, width, height, canvasWidth, canvasHeight, scale,
                 if (scale !== 1) {
                     canvas.scale(scale, cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR);
                 }
-                canvas.write(outputFilename);
+                canvas.write(outputFilename, errorCallback);
             }
             else {
                 if (scale !== 1) {
                     slice.scale(scale, cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR);
                 }
-                slice.write(outputFilename);
+                slice.write(outputFilename, errorCallback);
             }
             console.log(`Slice saved: ${outputFilename}`);
         }
