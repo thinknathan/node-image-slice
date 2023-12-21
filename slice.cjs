@@ -98,13 +98,14 @@ function main() {
 		);
 	} else if (options.folderPath) {
 		// Process all images in a folder, splitting the task into threads
-		let numCores = 2;
+		let numCores = 1;
 		try {
 			numCores = os.cpus().length;
 		} catch (err) {
 			console.error(err);
 		}
-		numCores = Math.max(numCores - 1, 1);
+		numCores = Math.max(numCores - 1, 1); // Min 1
+		numCores = Math.min(numCores, 16); // Max 16
 		(0, processPath_1.processPath)(options.folderPath, options, numCores);
 	} else {
 		console.log(
