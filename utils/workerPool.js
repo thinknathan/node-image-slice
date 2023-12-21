@@ -24,15 +24,15 @@ class WorkerPool {
      * @param options - Image processing options for the file.
      */
     createWorker(filePath, options) {
-        const worker = new worker_threads_1.Worker(path.join(__dirname, "processImage.js"), {
+        const worker = new worker_threads_1.Worker(path.join(__dirname, 'processImage.js'), {
             workerData: { filePath, options },
         });
         // Listen for messages and errors from the worker
-        worker.on("message", (message) => {
+        worker.on('message', (message) => {
             console.log(message);
             this.processNextTask();
         });
-        worker.on("error", (err) => {
+        worker.on('error', (err) => {
             console.error(`Error in worker for file ${filePath}:`, err);
             this.processNextTask();
         });
@@ -66,7 +66,7 @@ class WorkerPool {
      */
     waitForCompletion() {
         this.workers.forEach((worker) => {
-            worker.on("exit", () => {
+            worker.on('exit', () => {
                 this.processNextTask();
             });
         });

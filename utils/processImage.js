@@ -5,7 +5,7 @@ const Jimp = require("jimp");
 const fs = require("fs");
 const path = require("path");
 const worker_threads_1 = require("worker_threads");
-const outputFolder = "output";
+const outputFolder = 'output';
 /**
  * Function to slice an image into smaller segments
  */
@@ -26,7 +26,7 @@ function sliceImage(filename, width, height, skipExtCheck) {
         return;
     }
     // Check for supported image formats if skipExtCheck is false
-    const supportedFormats = [".png", ".gif", ".jpg", ".jpeg"];
+    const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
     let foundImage = false;
     // Attempt to read the image with different extensions
     supportedFormats.forEach((ext) => {

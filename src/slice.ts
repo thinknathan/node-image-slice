@@ -20,7 +20,7 @@ const options = yargs
 	})
 	.option('w', {
 		alias: 'width',
-		describe: 'Output image width',
+		describe: 'Width of each slice',
 		type: 'number',
 		demandOption: true,
 		coerce: (value) => {
@@ -32,7 +32,7 @@ const options = yargs
 	})
 	.option('h', {
 		alias: 'height',
-		describe: 'Output image height',
+		describe: 'Height of each slice',
 		type: 'number',
 		coerce: (value) => {
 			if (value !== undefined && value < 1) {
