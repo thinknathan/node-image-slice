@@ -34,7 +34,6 @@ export function sliceImage(
 					cubic,
 					filename,
 				);
-				return;
 			}
 		}
 	});
@@ -48,30 +47,29 @@ export function sliceImage(
 	let foundImage = false;
 
 	// Attempt to read the image with different extensions
-	supportedFormats.forEach((ext) => {
+	supportedFormats.forEach(async (ext, index) => {
 		const fullFilename = filename + ext;
 		if (!foundImage) {
-			Jimp.read(fullFilename, (err, image) => {
-				if (!foundImage && !err) {
-					foundImage = true;
-					continueSlicing(
-						image,
-						width,
-						height,
-						canvasWidth,
-						canvasHeight,
-						scale,
-						cubic,
-						fullFilename,
-					);
-				}
-			});
+			try {
+				const image = await Jimp.read(fullFilename);
+				foundImage = true;
+				continueSlicing(
+					image,
+					width,
+					height,
+					canvasWidth,
+					canvasHeight,
+					scale,
+					cubic,
+					fullFilename,
+				);
+			} catch (err) {}
+
+			if (!foundImage && index === supportedFormats.length - 1) {
+				console.error(`Could not find ${filename}`);
+			}
 		}
 	});
-
-	if (foundImage === false) {
-		throw new Error(`Could not find ${filename}`);
-	}
 }
 
 /**
@@ -87,6 +85,7 @@ function continueSlicing(
 	cubic: boolean,
 	inputFilename: string,
 ): void {
+	console.time('Done in');
 	// If height is not specified, use width as height
 	height = height || width;
 
@@ -156,6 +155,7 @@ function continueSlicing(
 			console.log(`Slice saved: ${outputFilename}`);
 		}
 	}
+	console.timeEnd('Done in');
 }
 
 // If used as a worker thread, get file name from message

@@ -18,7 +18,6 @@ function sliceImage(filename, width, height, canvasWidth, canvasHeight, scale, c
             // Continue slicing if image is successfully read
             if (image) {
                 continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, filename);
-                return;
             }
         }
     });
@@ -29,26 +28,27 @@ function sliceImage(filename, width, height, canvasWidth, canvasHeight, scale, c
     const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
     let foundImage = false;
     // Attempt to read the image with different extensions
-    supportedFormats.forEach((ext) => {
+    supportedFormats.forEach(async (ext, index) => {
         const fullFilename = filename + ext;
         if (!foundImage) {
-            Jimp.read(fullFilename, (err, image) => {
-                if (!foundImage && !err) {
-                    foundImage = true;
-                    continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, fullFilename);
-                }
-            });
+            try {
+                const image = await Jimp.read(fullFilename);
+                foundImage = true;
+                continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, fullFilename);
+            }
+            catch (err) { }
+            if (!foundImage && index === supportedFormats.length - 1) {
+                console.error(`Could not find ${filename}`);
+            }
         }
     });
-    if (foundImage === false) {
-        throw new Error(`Could not find ${filename}`);
-    }
 }
 exports.sliceImage = sliceImage;
 /**
  * Continue slicing the image into smaller segments
  */
 function continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, inputFilename) {
+    console.time('Done in');
     // If height is not specified, use width as height
     height = height || width;
     const imageWidth = image.getWidth();
@@ -95,6 +95,7 @@ function continueSlicing(image, width, height, canvasWidth, canvasHeight, scale,
             console.log(`Slice saved: ${outputFilename}`);
         }
     }
+    console.timeEnd('Done in');
 }
 // If used as a worker thread, get file name from message
 if (!worker_threads_1.isMainThread) {
