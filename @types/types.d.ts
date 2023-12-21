@@ -3,4 +3,6 @@ declare type Options = {
 	folderPath?: string;
 	width: number;
 	height?: number;
+	canvasWidth?: number;
+	canvasHeight?: number;
 };

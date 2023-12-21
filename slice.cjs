@@ -39,11 +39,27 @@ const options = yargs
 			}
 			return Math.round(value);
 		},
+	})
+	.option('d', {
+		alias: 'canvasWidth',
+		describe: 'Width of the canvas',
+		type: 'number',
+	})
+	.option('g', {
+		alias: 'canvasHeight',
+		describe: 'Height of the canvas',
+		type: 'number',
 	}).argv;
 if (options.filename) {
 	// Process a single image
-	const { filename, width, height } = options;
-	(0, processImage_1.sliceImage)(filename, width, height);
+	const { filename, width, height, canvasWidth, canvasHeight } = options;
+	(0, processImage_1.sliceImage)(
+		filename,
+		width,
+		height,
+		canvasWidth,
+		canvasHeight,
+	);
 } else if (options.folderPath) {
 	// Process all images in a folder, splitting the task into threads
 	let numCores = 2;

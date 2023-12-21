@@ -12,6 +12,8 @@ export function sliceImage(
 	filename: string,
 	width: number,
 	height?: number,
+	canvasWidth?: number,
+	canvasHeight?: number,
 	skipExtCheck?: boolean,
 ): void {
 	Jimp.read(filename, (err, image) => {
@@ -20,7 +22,14 @@ export function sliceImage(
 		} else {
 			// Continue slicing if image is successfully read
 			if (image) {
-				continueSlicing(image, width, height, filename);
+				continueSlicing(
+					image,
+					width,
+					height,
+					canvasWidth,
+					canvasHeight,
+					filename,
+				);
 				return;
 			}
 		}
@@ -41,7 +50,14 @@ export function sliceImage(
 			Jimp.read(fullFilename, (err, image) => {
 				if (!foundImage && !err) {
 					foundImage = true;
-					continueSlicing(image, width, height, fullFilename);
+					continueSlicing(
+						image,
+						width,
+						height,
+						canvasWidth,
+						canvasHeight,
+						fullFilename,
+					);
 				}
 			});
 		}
@@ -55,6 +71,8 @@ function continueSlicing(
 	image: Jimp,
 	width: number,
 	height: number | undefined,
+	canvasWidth: number | undefined,
+	canvasHeight: number | undefined,
 	inputFilename: string,
 ): void {
 	// If height is not specified, use width as height
@@ -100,6 +118,6 @@ function continueSlicing(
 if (!isMainThread) {
 	const { filePath, options } = workerData;
 	options.filename = filePath;
-	const { filename, width, height } = options;
-	sliceImage(filename, width, height, true);
+	const { filename, width, height, canvasWidth, canvasHeight } = options;
+	sliceImage(filename, width, height, canvasWidth, canvasHeight, true);
 }
