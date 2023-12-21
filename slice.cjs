@@ -42,12 +42,12 @@ const options = yargs
 	})
 	.option('d', {
 		alias: 'canvasWidth',
-		describe: 'Width of the canvas',
+		describe: 'Width of canvas for final output',
 		type: 'number',
 	})
 	.option('g', {
 		alias: 'canvasHeight',
-		describe: 'Height of the canvas',
+		describe: 'Height of canvas for final output',
 		type: 'number',
 	}).argv;
 if (options.filename) {

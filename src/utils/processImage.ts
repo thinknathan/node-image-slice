@@ -108,7 +108,27 @@ function continueSlicing(
 			);
 			const outputFilename = `${outputFolder}/${baseFilename}_${x}_${y}.png`;
 
-			slice.write(outputFilename);
+			if (canvasWidth || canvasHeight) {
+				// Calculate canvas dimensions
+				const finalCanvasWidth = canvasWidth || width;
+				const finalCanvasHeight = (canvasHeight || canvasWidth) ?? height;
+
+				// Create a new canvas with transparent background
+				const canvas = new Jimp(
+					finalCanvasWidth,
+					finalCanvasHeight,
+					0x00000000,
+				);
+
+				// Composite the image in the middle of the canvas
+				const startX2 = Math.floor((finalCanvasWidth - sliceWidth) / 2);
+				const startY2 = Math.floor((finalCanvasHeight - sliceHeight) / 2);
+				canvas.composite(slice, startX2, startY2);
+				canvas.write(outputFilename);
+			} else {
+				slice.write(outputFilename);
+			}
+
 			console.log(`Slice saved: ${outputFilename}`);
 		}
 	}
