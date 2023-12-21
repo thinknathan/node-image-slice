@@ -12,6 +12,8 @@ export function sliceImage(
 	filename: string,
 	width: number,
 	height?: number,
+	canvasWidth?: number,
+	canvasHeight?: number,
 	skipExtCheck?: boolean,
 ): void {
 	Jimp.read(filename, (err, image) => {
@@ -20,7 +22,14 @@ export function sliceImage(
 		} else {
 			// Continue slicing if image is successfully read
 			if (image) {
-				continueSlicing(image, width, height, filename);
+				continueSlicing(
+					image,
+					width,
+					height,
+					canvasWidth,
+					canvasHeight,
+					filename,
+				);
 				return;
 			}
 		}
@@ -41,7 +50,14 @@ export function sliceImage(
 			Jimp.read(fullFilename, (err, image) => {
 				if (!foundImage && !err) {
 					foundImage = true;
-					continueSlicing(image, width, height, fullFilename);
+					continueSlicing(
+						image,
+						width,
+						height,
+						canvasWidth,
+						canvasHeight,
+						fullFilename,
+					);
 				}
 			});
 		}
@@ -55,6 +71,8 @@ function continueSlicing(
 	image: Jimp,
 	width: number,
 	height: number | undefined,
+	canvasWidth: number | undefined,
+	canvasHeight: number | undefined,
 	inputFilename: string,
 ): void {
 	// If height is not specified, use width as height
@@ -90,7 +108,27 @@ function continueSlicing(
 			);
 			const outputFilename = `${outputFolder}/${baseFilename}_${x}_${y}.png`;
 
-			slice.write(outputFilename);
+			if (canvasWidth || canvasHeight) {
+				// Calculate canvas dimensions
+				const finalCanvasWidth = canvasWidth || width;
+				const finalCanvasHeight = (canvasHeight || canvasWidth) ?? height;
+
+				// Create a new canvas with transparent background
+				const canvas = new Jimp(
+					finalCanvasWidth,
+					finalCanvasHeight,
+					0x00000000,
+				);
+
+				// Composite the image in the middle of the canvas
+				const startX2 = Math.floor((finalCanvasWidth - sliceWidth) / 2);
+				const startY2 = Math.floor((finalCanvasHeight - sliceHeight) / 2);
+				canvas.composite(slice, startX2, startY2);
+				canvas.write(outputFilename);
+			} else {
+				slice.write(outputFilename);
+			}
+
 			console.log(`Slice saved: ${outputFilename}`);
 		}
 	}
@@ -100,6 +138,6 @@ function continueSlicing(
 if (!isMainThread) {
 	const { filePath, options } = workerData;
 	options.filename = filePath;
-	const { filename, width, height } = options;
-	sliceImage(filename, width, height, true);
+	const { filename, width, height, canvasWidth, canvasHeight } = options;
+	sliceImage(filename, width, height, canvasWidth, canvasHeight, true);
 }

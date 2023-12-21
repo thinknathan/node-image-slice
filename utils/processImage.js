@@ -5,11 +5,11 @@ const Jimp = require("jimp");
 const fs = require("fs");
 const path = require("path");
 const worker_threads_1 = require("worker_threads");
-const outputFolder = "output";
+const outputFolder = 'output';
 /**
  * Function to slice an image into smaller segments
  */
-function sliceImage(filename, width, height, skipExtCheck) {
+function sliceImage(filename, width, height, canvasWidth, canvasHeight, skipExtCheck) {
     Jimp.read(filename, (err, image) => {
         if (err && skipExtCheck) {
             console.error(err);
@@ -17,7 +17,7 @@ function sliceImage(filename, width, height, skipExtCheck) {
         else {
             // Continue slicing if image is successfully read
             if (image) {
-                continueSlicing(image, width, height, filename);
+                continueSlicing(image, width, height, canvasWidth, canvasHeight, filename);
                 return;
             }
         }
@@ -26,7 +26,7 @@ function sliceImage(filename, width, height, skipExtCheck) {
         return;
     }
     // Check for supported image formats if skipExtCheck is false
-    const supportedFormats = [".png", ".gif", ".jpg", ".jpeg"];
+    const supportedFormats = ['.png', '.gif', '.jpg', '.jpeg'];
     let foundImage = false;
     // Attempt to read the image with different extensions
     supportedFormats.forEach((ext) => {
@@ -35,7 +35,7 @@ function sliceImage(filename, width, height, skipExtCheck) {
             Jimp.read(fullFilename, (err, image) => {
                 if (!foundImage && !err) {
                     foundImage = true;
-                    continueSlicing(image, width, height, fullFilename);
+                    continueSlicing(image, width, height, canvasWidth, canvasHeight, fullFilename);
                 }
             });
         }
@@ -45,7 +45,7 @@ exports.sliceImage = sliceImage;
 /**
  * Continue slicing the image into smaller segments
  */
-function continueSlicing(image, width, height, inputFilename) {
+function continueSlicing(image, width, height, canvasWidth, canvasHeight, inputFilename) {
     // If height is not specified, use width as height
     height = height || width;
     const imageWidth = image.getWidth();
@@ -68,7 +68,21 @@ function continueSlicing(image, width, height, inputFilename) {
             // Incorporate the input filename into the output filename
             const baseFilename = path.basename(inputFilename, path.extname(inputFilename));
             const outputFilename = `${outputFolder}/${baseFilename}_${x}_${y}.png`;
-            slice.write(outputFilename);
+            if (canvasWidth || canvasHeight) {
+                // Calculate canvas dimensions
+                const finalCanvasWidth = canvasWidth || width;
+                const finalCanvasHeight = (canvasHeight || canvasWidth) ?? height;
+                // Create a new canvas with transparent background
+                const canvas = new Jimp(finalCanvasWidth, finalCanvasHeight, 0x00000000);
+                // Composite the image in the middle of the canvas
+                const startX2 = Math.floor((finalCanvasWidth - sliceWidth) / 2);
+                const startY2 = Math.floor((finalCanvasHeight - sliceHeight) / 2);
+                canvas.composite(slice, startX2, startY2);
+                canvas.write(outputFilename);
+            }
+            else {
+                slice.write(outputFilename);
+            }
             console.log(`Slice saved: ${outputFilename}`);
         }
     }
@@ -77,6 +91,6 @@ function continueSlicing(image, width, height, inputFilename) {
 if (!worker_threads_1.isMainThread) {
     const { filePath, options } = worker_threads_1.workerData;
     options.filename = filePath;
-    const { filename, width, height } = options;
-    sliceImage(filename, width, height, true);
+    const { filename, width, height, canvasWidth, canvasHeight } = options;
+    sliceImage(filename, width, height, canvasWidth, canvasHeight, true);
 }

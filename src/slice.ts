@@ -20,7 +20,7 @@ const options = yargs
 	})
 	.option('w', {
 		alias: 'width',
-		describe: 'Output image width',
+		describe: 'Width of each slice',
 		type: 'number',
 		demandOption: true,
 		coerce: (value) => {
@@ -32,7 +32,7 @@ const options = yargs
 	})
 	.option('h', {
 		alias: 'height',
-		describe: 'Output image height',
+		describe: 'Height of each slice',
 		type: 'number',
 		coerce: (value) => {
 			if (value !== undefined && value < 1) {
@@ -40,12 +40,22 @@ const options = yargs
 			}
 			return Math.round(value);
 		},
+	})
+	.option('d', {
+		alias: 'canvasWidth',
+		describe: 'Width of canvas for final output',
+		type: 'number',
+	})
+	.option('g', {
+		alias: 'canvasHeight',
+		describe: 'Height of canvas for final output',
+		type: 'number',
 	}).argv as unknown as Options;
 
 if (options.filename) {
 	// Process a single image
-	const { filename, width, height } = options;
-	sliceImage(filename, width, height);
+	const { filename, width, height, canvasWidth, canvasHeight } = options;
+	sliceImage(filename, width, height, canvasWidth, canvasHeight);
 } else if (options.folderPath) {
 	// Process all images in a folder, splitting the task into threads
 	let numCores = 2;
