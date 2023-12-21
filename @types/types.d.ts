@@ -5,4 +5,6 @@ declare type Options = {
 	height?: number;
 	canvasWidth?: number;
 	canvasHeight?: number;
+	scale: number;
+	cubic: boolean;
 };

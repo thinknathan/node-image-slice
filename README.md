@@ -25,6 +25,10 @@ Command-line utility that slices input images into segments according to specifi
 -h, --height        Height of each slice                              [number]
 -d, --canvasWidth   Width of canvas for final output                  [number]
 -g, --canvasHeight  Height of canvas for final output                 [number]
+-s, --scale         Rescale the image up or down by this factor, after
+										slicing, but before canvas resize    [number] [default: 1]
+-c, --cubic         Uses bicubic interpolation instead of nearest neighbour if
+										rescaling                       [boolean] [default: false]
 ```
 
 - If `filename` does not include an extension, `.png`, `.gif`, `.jpg` and `.jpeg` will be guessed

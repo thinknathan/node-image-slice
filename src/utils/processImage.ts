@@ -11,9 +11,11 @@ const outputFolder = 'output';
 export function sliceImage(
 	filename: string,
 	width: number,
-	height?: number,
-	canvasWidth?: number,
-	canvasHeight?: number,
+	height: number | undefined,
+	canvasWidth: number | undefined,
+	canvasHeight: number | undefined,
+	scale: number,
+	cubic: boolean,
 	skipExtCheck?: boolean,
 ): void {
 	Jimp.read(filename, (err, image) => {
@@ -28,6 +30,8 @@ export function sliceImage(
 					height,
 					canvasWidth,
 					canvasHeight,
+					scale,
+					cubic,
 					filename,
 				);
 				return;
@@ -56,6 +60,8 @@ export function sliceImage(
 						height,
 						canvasWidth,
 						canvasHeight,
+						scale,
+						cubic,
 						fullFilename,
 					);
 				}
@@ -73,6 +79,8 @@ function continueSlicing(
 	height: number | undefined,
 	canvasWidth: number | undefined,
 	canvasHeight: number | undefined,
+	scale: number,
+	cubic: boolean,
 	inputFilename: string,
 ): void {
 	// If height is not specified, use width as height
@@ -124,8 +132,20 @@ function continueSlicing(
 				const startX2 = Math.floor((finalCanvasWidth - sliceWidth) / 2);
 				const startY2 = Math.floor((finalCanvasHeight - sliceHeight) / 2);
 				canvas.composite(slice, startX2, startY2);
+				if (scale !== 1) {
+					canvas.scale(
+						scale,
+						cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR,
+					);
+				}
 				canvas.write(outputFilename);
 			} else {
+				if (scale !== 1) {
+					slice.scale(
+						scale,
+						cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR,
+					);
+				}
 				slice.write(outputFilename);
 			}
 
@@ -138,6 +158,16 @@ function continueSlicing(
 if (!isMainThread) {
 	const { filePath, options } = workerData;
 	options.filename = filePath;
-	const { filename, width, height, canvasWidth, canvasHeight } = options;
-	sliceImage(filename, width, height, canvasWidth, canvasHeight, true);
+	const { filename, width, height, canvasWidth, canvasHeight, scale, cubic } =
+		options;
+	sliceImage(
+		filename,
+		width,
+		height,
+		canvasWidth,
+		canvasHeight,
+		scale,
+		cubic,
+		true,
+	);
 }

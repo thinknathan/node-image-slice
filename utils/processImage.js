@@ -9,7 +9,7 @@ const outputFolder = 'output';
 /**
  * Function to slice an image into smaller segments
  */
-function sliceImage(filename, width, height, canvasWidth, canvasHeight, skipExtCheck) {
+function sliceImage(filename, width, height, canvasWidth, canvasHeight, scale, cubic, skipExtCheck) {
     Jimp.read(filename, (err, image) => {
         if (err && skipExtCheck) {
             console.error(err);
@@ -17,7 +17,7 @@ function sliceImage(filename, width, height, canvasWidth, canvasHeight, skipExtC
         else {
             // Continue slicing if image is successfully read
             if (image) {
-                continueSlicing(image, width, height, canvasWidth, canvasHeight, filename);
+                continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, filename);
                 return;
             }
         }
@@ -35,7 +35,7 @@ function sliceImage(filename, width, height, canvasWidth, canvasHeight, skipExtC
             Jimp.read(fullFilename, (err, image) => {
                 if (!foundImage && !err) {
                     foundImage = true;
-                    continueSlicing(image, width, height, canvasWidth, canvasHeight, fullFilename);
+                    continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, fullFilename);
                 }
             });
         }
@@ -45,7 +45,7 @@ exports.sliceImage = sliceImage;
 /**
  * Continue slicing the image into smaller segments
  */
-function continueSlicing(image, width, height, canvasWidth, canvasHeight, inputFilename) {
+function continueSlicing(image, width, height, canvasWidth, canvasHeight, scale, cubic, inputFilename) {
     // If height is not specified, use width as height
     height = height || width;
     const imageWidth = image.getWidth();
@@ -78,9 +78,15 @@ function continueSlicing(image, width, height, canvasWidth, canvasHeight, inputF
                 const startX2 = Math.floor((finalCanvasWidth - sliceWidth) / 2);
                 const startY2 = Math.floor((finalCanvasHeight - sliceHeight) / 2);
                 canvas.composite(slice, startX2, startY2);
+                if (scale !== 1) {
+                    canvas.scale(scale, cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR);
+                }
                 canvas.write(outputFilename);
             }
             else {
+                if (scale !== 1) {
+                    slice.scale(scale, cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR);
+                }
                 slice.write(outputFilename);
             }
             console.log(`Slice saved: ${outputFilename}`);
@@ -91,6 +97,6 @@ function continueSlicing(image, width, height, canvasWidth, canvasHeight, inputF
 if (!worker_threads_1.isMainThread) {
     const { filePath, options } = worker_threads_1.workerData;
     options.filename = filePath;
-    const { filename, width, height, canvasWidth, canvasHeight } = options;
-    sliceImage(filename, width, height, canvasWidth, canvasHeight, true);
+    const { filename, width, height, canvasWidth, canvasHeight, scale, cubic } = options;
+    sliceImage(filename, width, height, canvasWidth, canvasHeight, scale, cubic, true);
 }
