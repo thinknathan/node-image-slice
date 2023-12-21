@@ -45,11 +45,23 @@ const options = yargs
 		alias: 'canvasWidth',
 		describe: 'Width of canvas for final output',
 		type: 'number',
+		coerce: (value) => {
+			if (value !== undefined && value < 1) {
+				throw new Error('canvasWidth should not be lower than 1');
+			}
+			return Math.round(value);
+		},
 	})
 	.option('g', {
 		alias: 'canvasHeight',
 		describe: 'Height of canvas for final output',
 		type: 'number',
+		coerce: (value) => {
+			if (value !== undefined && value < 1) {
+				throw new Error('canvasHeight should not be lower than 1');
+			}
+			return Math.round(value);
+		},
 	}).argv as unknown as Options;
 
 if (options.filename) {
