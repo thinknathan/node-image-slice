@@ -68,6 +68,10 @@ export function sliceImage(
 			});
 		}
 	});
+
+	if (foundImage === false) {
+		throw new Error(`Could not find ${filename}`);
+	}
 }
 
 /**

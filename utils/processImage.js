@@ -40,6 +40,9 @@ function sliceImage(filename, width, height, canvasWidth, canvasHeight, scale, c
             });
         }
     });
+    if (foundImage === false) {
+        throw new Error(`Could not find ${filename}`);
+    }
 }
 exports.sliceImage = sliceImage;
 /**
