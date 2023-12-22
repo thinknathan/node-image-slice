@@ -1,30 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.processPath = void 0;
-const fs = require("fs");
+const fs = require("fs/promises");
 const path = require("path");
 const workerPool_1 = require("./workerPool");
 /**
  * Processes all files in the specified directory with the given image processing options.
  */
-function processPath(directoryPath, options, maxWorkers) {
+async function processPath(directoryPath, options, maxWorkers) {
     const workerPool = new workerPool_1.WorkerPool(maxWorkers);
-    // Read the contents of the directory
-    fs.readdir(directoryPath, (err, files) => {
-        if (err) {
-            console.error(`Error reading directory: ${directoryPath}`, err);
-            return;
-        }
+    try {
+        const files = await fs.readdir(directoryPath);
         // Add each file as a task to the worker pool
-        files.forEach((file) => {
+        for (const file of files) {
             const filePath = path.join(directoryPath, file);
             // Check if it's a file (not a subdirectory)
-            if (fs.statSync(filePath).isFile()) {
+            if ((await fs.stat(filePath)).isFile()) {
                 workerPool.addTask(filePath, options);
             }
-        });
+        }
         // Wait for all tasks to complete before exiting
         workerPool.waitForCompletion();
-    });
+    }
+    catch (err) {
+        console.error(`Error reading directory: ${directoryPath}`, err);
+    }
 }
 exports.processPath = processPath;
