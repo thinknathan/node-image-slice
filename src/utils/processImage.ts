@@ -13,6 +13,7 @@ function errorCallback(err: unknown) {
  * Function to slice an image into smaller segments
  */
 export function sliceImage(options: Options, skipExtCheck?: boolean): void {
+	console.time('Done in');
 	const { filename } = options;
 	Jimp.read(filename!)
 		.then((image) => {
@@ -65,8 +66,6 @@ export function sliceImage(options: Options, skipExtCheck?: boolean): void {
  * Continue slicing the image into smaller segments
  */
 function continueSlicing(image: Jimp, options: Options): void {
-	console.time('Done in');
-
 	const { filename, width, canvasWidth, canvasHeight, scale, cubic } = options;
 	// If height is not specified, use width as height
 	const height = options.height || options.width;
