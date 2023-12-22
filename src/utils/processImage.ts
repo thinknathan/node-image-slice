@@ -12,31 +12,14 @@ function errorCallback(err: unknown) {
 /**
  * Function to slice an image into smaller segments
  */
-export function sliceImage(
-	filename: string,
-	width: number,
-	height: number | undefined,
-	canvasWidth: number | undefined,
-	canvasHeight: number | undefined,
-	scale: number,
-	cubic: boolean,
-	skipExtCheck?: boolean,
-): void {
-	Jimp.read(filename)
+export function sliceImage(options: Options, skipExtCheck?: boolean): void {
+	const { filename } = options;
+	Jimp.read(filename!)
 		.then((image) => {
 			// Continue slicing if image is successfully read
 			if (image) {
 				skipExtCheck = true;
-				continueSlicing(
-					image,
-					width,
-					height,
-					canvasWidth,
-					canvasHeight,
-					scale,
-					cubic,
-					filename,
-				);
+				continueSlicing(image, options);
 			}
 		})
 		.catch((err) => {
@@ -60,16 +43,7 @@ export function sliceImage(
 					Jimp.read(fullFilename)
 						.then((image) => {
 							foundImage = true;
-							continueSlicing(
-								image,
-								width,
-								height,
-								canvasWidth,
-								canvasHeight,
-								scale,
-								cubic,
-								fullFilename,
-							);
+							continueSlicing(image, options);
 						})
 						// Silence errors since we'll handle them later
 						.catch(() => {})
@@ -90,20 +64,12 @@ export function sliceImage(
 /**
  * Continue slicing the image into smaller segments
  */
-function continueSlicing(
-	image: Jimp,
-	width: number,
-	height: number | undefined,
-	canvasWidth: number | undefined,
-	canvasHeight: number | undefined,
-	scale: number,
-	cubic: boolean,
-	inputFilename: string,
-): void {
+function continueSlicing(image: Jimp, options: Options): void {
 	console.time('Done in');
 
+	const { filename, width, canvasWidth, canvasHeight, scale, cubic } = options;
 	// If height is not specified, use width as height
-	height = height || width;
+	const height = options.height || options.width;
 
 	const imageWidth = image.getWidth();
 	const imageHeight = image.getHeight();
@@ -130,10 +96,7 @@ function continueSlicing(
 			const slice = image.clone().crop(startX, startY, sliceWidth, sliceHeight);
 
 			// Incorporate the input filename into the output filename
-			const baseFilename = path.basename(
-				inputFilename,
-				path.extname(inputFilename),
-			);
+			const baseFilename = path.basename(filename!, path.extname(filename!));
 			const outputFilename = `${outputFolder}/${baseFilename}_${x}_${y}.png`;
 
 			if (canvasWidth || canvasHeight) {
@@ -179,16 +142,6 @@ function continueSlicing(
 if (!isMainThread) {
 	const { filePath, options } = workerData;
 	options.filename = filePath;
-	const { filename, width, height, canvasWidth, canvasHeight, scale, cubic } =
-		options;
-	sliceImage(
-		filename,
-		width,
-		height,
-		canvasWidth,
-		canvasHeight,
-		scale,
-		cubic,
-		true,
-	);
+
+	sliceImage(options, true);
 }

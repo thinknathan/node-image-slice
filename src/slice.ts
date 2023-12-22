@@ -99,17 +99,7 @@ function main() {
 
 	if (options.filename) {
 		// Process a single image
-		const { filename, width, height, canvasWidth, canvasHeight, scale, cubic } =
-			options;
-		sliceImage(
-			filename,
-			width,
-			height,
-			canvasWidth,
-			canvasHeight,
-			scale,
-			cubic,
-		);
+		sliceImage(options);
 	} else if (options.folderPath) {
 		// Process all images in a folder, splitting the task into threads
 		let numCores = 1;
