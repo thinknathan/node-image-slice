@@ -32,6 +32,8 @@ Command-line utility that slices input images into segments according to specifi
 ```
 
 - If `filename` does not include an extension, `.png`, `.gif`, `.jpg` and `.jpeg` will be guessed
+- Valid input formats: `jpeg`, `png`, `bmp`, `tiff`, `gif`
+- Output format is `.png`
 - If `height` is not specified, `width` will be used as `height`
 
 ## Background
