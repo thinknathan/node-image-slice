@@ -1,4 +1,4 @@
-# node-image-slice
+# Simple Image Slicer
 
 Command-line utility that slices input images into segments according to specified width and height, and outputs those segments into a folder.
 
@@ -14,9 +14,12 @@ Command-line utility that slices input images into segments according to specifi
    or
    `yarn`
 
+4. Install for command-line usage
+   `npm link`
+
 ## Usage
 
-`node slice.cjs`
+`slice`
 
 ```
 -f, --filename      Input image filename                              [string]
