@@ -1,3 +1,5 @@
+<img src="_docs/simple-image-slicer.png" alt="Simple Image Slicer">
+
 # Simple Image Slicer
 
 Command-line utility that slices input images into segments according to specified width and height, and outputs those segments into a folder.

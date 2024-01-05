@@ -6,3 +6,4 @@
 .vscode export-ignore
 .prettierignore export-ignore
 .prettierrc.json export-ignore
+_docs export-ignore
