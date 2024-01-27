@@ -18,6 +18,7 @@
 		"utils"
 	],
 	"scripts": {
+		"ci": "tsc --noEmit",
 		"build": "tsc && npm run renameCjs && npm run prettier",
 		"renameCjs": "node -e \"require('fs').renameSync('slice.js', 'slice.cjs')\"",
 		"prettier": "prettier \"./**/*.{ts,d.ts,cjs,md,json}\" --write"
