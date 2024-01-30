@@ -19,7 +19,7 @@
 	],
 	"scripts": {
 		"ci": "npm run lint && tsc --noEmit",
-		"build": "tsc && npm run renameCjs && npm run prettier",
+		"build": "tsc && npm run renameCjs && prettier \"*.cjs\" --write",
 		"lint": "eslint src",
 		"renameCjs": "node -e \"require('fs').renameSync('slice.js', 'slice.cjs')\"",
 		"prettier": "prettier \"./**/*.{ts,d.ts,cjs,md,json}\" --write"
