@@ -9,6 +9,8 @@ function errorCallback(err: unknown) {
 	}
 }
 
+const workIsDone = () => parentPort?.postMessage('complete');
+
 /**
  * Function to slice an image into smaller segments
  */
@@ -133,19 +135,20 @@ function continueSlicing(image: Jimp, options: Options): void {
 			console.log(`Slice saved: ${outputFilename}`);
 		}
 	}
+
+	if (!isMainThread) {
+		workIsDone();
+	}
 }
 
 // If used as a worker thread, get file name from message
 if (!isMainThread) {
-	const workIsDone = () => parentPort?.postMessage('complete');
-
 	parentPort?.on(
 		'message',
 		async (message: { filePath: string; options: Options }) => {
 			const { filePath, options } = message;
 			options.filename = filePath;
 			sliceImage(options, true);
-			workIsDone();
 		},
 	);
 }

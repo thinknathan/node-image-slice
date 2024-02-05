@@ -64,8 +64,8 @@ export class WorkerPool {
 			path.join(__dirname, 'processImage.js'),
 		) as TWorker;
 
-		worker.postMessage({ filePath, options });
 		worker.isIdle = false;
+		worker.postMessage({ filePath, options });
 
 		// Listen for messages and errors from the worker
 		worker.on('message', () => {
@@ -93,6 +93,7 @@ export class WorkerPool {
 			} else {
 				const worker = this.workers.find((w) => w.isIdle);
 				if (worker) {
+					worker.isIdle = false;
 					worker.postMessage(nextTask);
 				} else {
 					// Something went wrong, there are no idle workers somehow

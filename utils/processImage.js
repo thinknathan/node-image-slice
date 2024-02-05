@@ -10,6 +10,7 @@ function errorCallback(err) {
         console.error(err);
     }
 }
+const workIsDone = () => worker_threads_1.parentPort?.postMessage('complete');
 /**
  * Function to slice an image into smaller segments
  */
@@ -109,14 +110,15 @@ function continueSlicing(image, options) {
             console.log(`Slice saved: ${outputFilename}`);
         }
     }
+    if (!worker_threads_1.isMainThread) {
+        workIsDone();
+    }
 }
 // If used as a worker thread, get file name from message
 if (!worker_threads_1.isMainThread) {
-    const workIsDone = () => worker_threads_1.parentPort?.postMessage('complete');
     worker_threads_1.parentPort?.on('message', async (message) => {
         const { filePath, options } = message;
         options.filename = filePath;
         sliceImage(options, true);
-        workIsDone();
     });
 }

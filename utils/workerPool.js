@@ -50,8 +50,8 @@ class WorkerPool {
      */
     createWorker(filePath, options) {
         const worker = new worker_threads_1.Worker(path.join(__dirname, 'processImage.js'));
-        worker.postMessage({ filePath, options });
         worker.isIdle = false;
+        worker.postMessage({ filePath, options });
         // Listen for messages and errors from the worker
         worker.on('message', () => {
             worker.isIdle = true;
@@ -76,6 +76,7 @@ class WorkerPool {
             else {
                 const worker = this.workers.find((w) => w.isIdle);
                 if (worker) {
+                    worker.isIdle = false;
                     worker.postMessage(nextTask);
                 }
                 else {
