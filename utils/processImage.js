@@ -10,7 +10,10 @@ function errorCallback(err) {
         console.error(err);
     }
 }
-const workIsDone = () => worker_threads_1.parentPort?.postMessage('complete');
+/**
+ * Called on a worker thread to signal current work is complete
+ */
+const workerIsDone = () => worker_threads_1.parentPort?.postMessage('complete');
 /**
  * Function to slice an image into smaller segments
  */
@@ -70,6 +73,8 @@ function continueSlicing(image, options) {
     // Calculate the number of slices in both dimensions
     const horizontalSlices = Math.ceil(imageWidth / width);
     const verticalSlices = Math.ceil(imageHeight / height);
+    const totalSlices = horizontalSlices * verticalSlices;
+    let savedSlices = 0;
     // Create a folder for output if it doesn't exist
     const outputFolder = 'output';
     if (!fs.existsSync(outputFolder)) {
@@ -86,6 +91,13 @@ function continueSlicing(image, options) {
             // Incorporate the input filename into the output filename
             const baseFilename = path.basename(filename, path.extname(filename));
             const outputFilename = `${outputFolder}/${baseFilename}_${x}_${y}.png`;
+            const finishedSavingFile = () => {
+                console.log(`Slice saved: ${outputFilename}`);
+                savedSlices++;
+                if (savedSlices === totalSlices && !worker_threads_1.isMainThread) {
+                    workerIsDone();
+                }
+            };
             if (canvasWidth || canvasHeight) {
                 // Calculate canvas dimensions
                 const finalCanvasWidth = canvasWidth || width;
@@ -99,19 +111,21 @@ function continueSlicing(image, options) {
                 if (scale !== 1) {
                     canvas.scale(scale, cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR);
                 }
-                canvas.write(outputFilename, errorCallback);
+                canvas
+                    .writeAsync(outputFilename)
+                    .then(finishedSavingFile)
+                    .catch(errorCallback);
             }
             else {
                 if (scale !== 1) {
                     slice.scale(scale, cubic ? Jimp.RESIZE_BICUBIC : Jimp.RESIZE_NEAREST_NEIGHBOR);
                 }
-                slice.write(outputFilename, errorCallback);
+                slice
+                    .writeAsync(outputFilename)
+                    .then(finishedSavingFile)
+                    .catch(errorCallback);
             }
-            console.log(`Slice saved: ${outputFilename}`);
         }
-    }
-    if (!worker_threads_1.isMainThread) {
-        workIsDone();
     }
 }
 // If used as a worker thread, get file name from message
