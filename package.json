@@ -1,6 +1,6 @@
 {
 	"name": "node-image-slice",
-	"version": "2.2.1",
+	"version": "2.2.2",
 	"description": "Slices an input image into segments according to specified width and height",
 	"repository": {
 		"type": "git",
