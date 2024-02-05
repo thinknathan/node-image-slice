@@ -5,9 +5,10 @@ const yargs = require('yargs');
 const os = require('os');
 const processImage_1 = require('./utils/processImage');
 const processPath_1 = require('./utils/processPath');
-function main() {
+async function main() {
+	console.time('Done in');
 	// Parse command line arguments
-	const options = yargs
+	const options = await yargs(process.argv.slice(2))
 		.option('f', {
 			alias: 'filename',
 			describe: 'Input image filename',
@@ -94,7 +95,8 @@ function main() {
 				'Uses bicubic interpolation instead of nearest neighbour if rescaling',
 			type: 'boolean',
 			default: false,
-		}).argv;
+		})
+		.parse();
 	if (options.filename) {
 		// Process a single image
 		(0, processImage_1.sliceImage)(options);
@@ -107,12 +109,13 @@ function main() {
 			console.error(err);
 		}
 		numCores = Math.max(numCores - 1, 1); // Min 1
-		numCores = Math.min(numCores, 16); // Max 16
-		(0, processPath_1.processPath)(options.folderPath, options, numCores);
+		numCores = Math.min(numCores, 32); // Max 32
+		await (0, processPath_1.processPath)(options.folderPath, options, numCores);
 	} else {
 		console.error(
 			'Error: Requires either `filename` or `folderPath`. Run `slice --help` for help.',
 		);
 	}
+	console.timeEnd('Done in');
 }
 main();

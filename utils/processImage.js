@@ -14,7 +14,6 @@ function errorCallback(err) {
  * Function to slice an image into smaller segments
  */
 function sliceImage(options, skipExtCheck) {
-    console.time('Done in');
     const { filename } = options;
     Jimp.read(filename)
         .then((image) => {
@@ -110,11 +109,14 @@ function continueSlicing(image, options) {
             console.log(`Slice saved: ${outputFilename}`);
         }
     }
-    console.timeEnd('Done in');
 }
 // If used as a worker thread, get file name from message
 if (!worker_threads_1.isMainThread) {
-    const { filePath, options } = worker_threads_1.workerData;
-    options.filename = filePath;
-    sliceImage(options, true);
+    const workIsDone = () => worker_threads_1.parentPort?.postMessage('complete');
+    worker_threads_1.parentPort?.on('message', async (message) => {
+        const { filePath, options } = message;
+        options.filename = filePath;
+        sliceImage(options, true);
+        workIsDone();
+    });
 }
