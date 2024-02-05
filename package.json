@@ -8,6 +8,9 @@
 	},
 	"author": "Nathan Bolton (https://thinknathan.ca/)",
 	"license": "CC0-1.0",
+	"engines": {
+		"node": "^18 || >=20"
+	},
 	"type": "commonjs",
 	"main": "slice.cjs",
 	"bin": {
