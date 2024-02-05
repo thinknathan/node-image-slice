@@ -7,6 +7,31 @@ const path = require("path");
  * Manages a pool of worker threads for parallel processing of image files.
  */
 class WorkerPool {
+    isComplete() {
+        return (this.taskQueue.length === 0 &&
+            this.workers.every((worker) => worker.isIdle));
+    }
+    /**
+     * Terminate all workers in the pool.
+     */
+    exitAll() {
+        this.workers.forEach((worker) => worker.terminate());
+        this.workers = [];
+    }
+    /**
+     * Returns a promise that resolves when all work is done.
+     */
+    async allComplete() {
+        if (this.isComplete()) {
+            return Promise.resolve();
+        }
+        if (!this.completePromise) {
+            this.completePromise = new Promise((resolve) => {
+                this.completeResolve = resolve;
+            });
+        }
+        return this.completePromise;
+    }
     /**
      * Creates a new WorkerPool instance.
      *
@@ -24,16 +49,17 @@ class WorkerPool {
      * @param options - Image processing options for the file.
      */
     createWorker(filePath, options) {
-        const worker = new worker_threads_1.Worker(path.join(__dirname, 'processImage.js'), {
-            workerData: { filePath, options },
-        });
+        const worker = new worker_threads_1.Worker(path.join(__dirname, 'processImage.js'));
+        worker.isIdle = false;
+        worker.postMessage({ filePath, options });
         // Listen for messages and errors from the worker
-        worker.on('message', (message) => {
-            console.log(message);
+        worker.on('message', () => {
+            worker.isIdle = true;
             this.processNextTask();
         });
         worker.on('error', (err) => {
             console.error(`Error in worker for file ${filePath}:`, err);
+            worker.isIdle = true;
             this.processNextTask();
         });
         this.workers.push(worker);
@@ -44,7 +70,25 @@ class WorkerPool {
     processNextTask() {
         const nextTask = this.taskQueue.shift();
         if (nextTask) {
-            this.createWorker(nextTask.filePath, nextTask.options);
+            if (this.workers.length < this.maxWorkers) {
+                this.createWorker(nextTask.filePath, nextTask.options);
+            }
+            else {
+                const worker = this.workers.find((w) => w.isIdle);
+                if (worker) {
+                    worker.isIdle = false;
+                    worker.postMessage(nextTask);
+                }
+                else {
+                    // Something went wrong, there are no idle workers somehow
+                    throw Error('Could not find an idle worker.');
+                }
+            }
+        }
+        else if (this.isComplete() && this.completeResolve) {
+            this.completeResolve();
+            this.completePromise = undefined;
+            this.completeResolve = undefined;
         }
     }
     /**
@@ -60,16 +104,6 @@ class WorkerPool {
         else {
             this.taskQueue.push({ filePath, options });
         }
-    }
-    /**
-     * Waits for all tasks to complete before exiting.
-     */
-    waitForCompletion() {
-        this.workers.forEach((worker) => {
-            worker.on('exit', () => {
-                this.processNextTask();
-            });
-        });
     }
 }
 exports.WorkerPool = WorkerPool;
