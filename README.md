@@ -2,7 +2,7 @@
 
 # Simple Image Slicer
 
-[![CI](https://github.com/thinknathan/node-image-slice/actions/workflows/ci.yml/badge.svg)](https://github.com/thinknathan/node-image-slice/actions/workflows/ci.yml)
+[![CI](https://github.com/thinknathan/node-image-slice/actions/workflows/ci.yml/badge.svg)](https://github.com/thinknathan/node-image-slice/actions/workflows/ci.yml) ![GitHub License](https://img.shields.io/github/license/thinknathan/node-image-slice)
 
 Command-line utility that slices input images into segments according to specified width and height, and outputs those segments into a folder.
 
