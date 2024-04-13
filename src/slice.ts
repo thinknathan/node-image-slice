@@ -15,7 +15,7 @@ async function main() {
 			alias: 'filename',
 			describe: 'Input image filename',
 			type: 'string',
-			coerce: (value) => {
+			coerce: (value: string | string[]) => {
 				if (Array.isArray(value)) {
 					value = value.join('');
 				}
@@ -26,7 +26,7 @@ async function main() {
 			alias: 'folderPath',
 			describe: 'Input folder',
 			type: 'string',
-			coerce: (value) => {
+			coerce: (value: string | string[]) => {
 				if (Array.isArray(value)) {
 					value = value.join('');
 				}
@@ -38,7 +38,7 @@ async function main() {
 			describe: 'Width of each slice',
 			type: 'number',
 			demandOption: true,
-			coerce: (value) => {
+			coerce: (value: number) => {
 				if (value < 1) {
 					throw new Error('width should not be lower than 1');
 				}
@@ -49,7 +49,7 @@ async function main() {
 			alias: 'height',
 			describe: 'Height of each slice',
 			type: 'number',
-			coerce: (value) => {
+			coerce: (value: number) => {
 				if (value !== undefined && value < 1) {
 					throw new Error('height should not be lower than 1');
 				}
@@ -60,7 +60,7 @@ async function main() {
 			alias: 'canvasWidth',
 			describe: 'Width of canvas for final output',
 			type: 'number',
-			coerce: (value) => {
+			coerce: (value: number) => {
 				if (value !== undefined && value < 1) {
 					throw new Error('canvasWidth should not be lower than 1');
 				}
@@ -71,7 +71,7 @@ async function main() {
 			alias: 'canvasHeight',
 			describe: 'Height of canvas for final output',
 			type: 'number',
-			coerce: (value) => {
+			coerce: (value: number) => {
 				if (value !== undefined && value < 1) {
 					throw new Error('canvasHeight should not be lower than 1');
 				}
@@ -84,7 +84,7 @@ async function main() {
 				'Rescale the image up or down by this factor, after slicing, but before canvas resize',
 			type: 'number',
 			default: 1,
-			coerce: (value) => {
+			coerce: (value: number) => {
 				if (value <= 0) {
 					throw new Error('scale should be > 0');
 				}
@@ -122,4 +122,4 @@ async function main() {
 	// console.timeEnd('Done in');
 }
 
-main();
+void main();

@@ -23,7 +23,7 @@ export class WorkerPool {
 	 * Terminate all workers in the pool.
 	 */
 	public exitAll(): void {
-		this.workers.forEach((worker) => worker.terminate());
+		this.workers.forEach((worker) => void worker.terminate());
 		this.workers = [];
 	}
 
