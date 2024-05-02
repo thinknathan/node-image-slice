@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 'latest'
+      - name: Install deps
+        run: bun install
+      - name: Produce JS
+        run: bun run build
+      - name: Build Win x64
+        run: bun build --compile --minify --target=bun-windows-x64 ./slice.cjs --outfile slice-windows-x64.exe
+      - name: Build Linux x64
+        run: bun build --compile --minify --target=bun-linux-x64 ./slice.cjs --outfile slice-linux-x64
+      - name: Build Linux Arm64
+        run: bun build --compile --minify --target=bun-linux-arm64 ./slice.cjs --outfile slice-linux-arm64
+      - name: Build Darwin Arm64
+        run: bun build --compile --minify --target=bun-darwin-arm64 ./slice.cjs --outfile slice-darwin-arm64
+      - name: Build Darwin x64
+        run: bun build --compile --minify --target=bun-darwin-x64 ./slice.cjs --outfile slice-darwin-x64
+      - name: Upload release files
+        uses: actions/upload-artifact@v4
+        with:
+          compression-level: 7
+          overwrite: true
